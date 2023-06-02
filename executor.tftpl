@@ -1,0 +1,21 @@
+#!/bin/bash
+
+%{ for k, v in environment_variables ~}
+export ${k}=${v}
+%{ endfor ~}
+
+export ENV_VARS=$(env)
+export DEPENDENCIES=$(${install_dependencies})
+
+export PROGRAM="${program}"
+export HANDLER="${handler}"
+
+ARGUMENTS=""
+%{ for arg in arguments ~}
+ARGUMENTS+="${arg} "
+%{ endfor ~}
+export ARGUMENTS=$(echo $ARGUMENTS | awk '{$1=$1};1')
+
+export RESULT=$(${program} ${handler} $ARGUMENTS)
+
+echo "" | jq -R '{ program: env.PROGRAM, handler: env.HANDLER, arguments: env.ARGUMENTS, env_vars: env.ENV_VARS, dependencies: env.DEPENDENCIES, result: env.RESULT}'
